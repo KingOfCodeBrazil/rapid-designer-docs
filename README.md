@@ -1,4 +1,4 @@
-# Rapid Designer
+# Rapid Designer - API e Integração v1
 
 Utilizando a API de integração do Rapid Designer, é possível integrá-lo à sites e plataformas de e-commerce, possibilitando a customização de produtos e a visualização dos mesmos em 3D.
 
@@ -71,7 +71,7 @@ Tendo o ID do Rapid Designer salvo no seu produto, você pode colocar um botão 
 </div>
 ```
 
-A URL do iframe deve ser deve seguir o seguinte formato:
+A URL do iframe deve seguir o seguinte formato:
 
 ```
 https://designer.rapidmockup.net/designer
@@ -162,7 +162,7 @@ window.addEventListener('message', function (event) {
         // é salva pelo usuário clicando em "Salvar Desenho". Você
         // pode aqui fazer um redirect para o carrinho ou qualquer
         // outra ação. Também retorna o id do design em 
-        // "event.data.design". No entanto o id do design não muda, 
+        // "event.data.design". No entanto o id do design não muda nunca, 
         // mesmo após a edição.
 
     }
@@ -170,82 +170,99 @@ window.addEventListener('message', function (event) {
 }, false);
 ```
 
+Recomendamos que o ID do design, retornado via "event.data.design", seja guardado no item do carrinho, na Session ou qualquer outro meio que esteja utilizando para guardá-lo. 
+
+Dessa forma é possível utilizar este ID para editar o design se o usuário desejar. 
+
+Também é altamente recomendável guardar esta informação no banco de dados, pois a mesma deverá ser enviada na finalização do pedido, e também poderá ser utilizada futuramente caso seja necessário refazer o envio do pedido por falha de comunicação ou algo parecido.
+
 ## 4 - Obtendo a Thumbnail do design que foi desenhado
+
+É provável que queira mostrar uma amostra do desenho que o usuário fez no carrinho ou na página de compra da loja. Para isso, você pode fazer uma requisição para a seguinte URL (ou utilizá-la diretamente na tag img).
+
+```
+https://designer.rapidmockup.net/designs/id-do-seu-design?type=thumb
+```
+
+Exemplo direto na tag img
+
+```html
+<img src="https://designer.rapidmockup.net/designs/id-do-seu-design?type=thumb">
+```
 
 ## 5 - Modo de Edição
 
-## 6 - Obtendo resposta 
+É altamente recomendável que seja adicionado um botão ou link "Editar Desenho" ou algo similar nos itens do carrinho ou na página de compra. Dessa forma o usuário pode retornar e editar o desenho antes de finalizar a compra.
 
-## Questions Collection [/questions]
+Para acessar o modo de edição, é bastante simples. Basta passar o parâmetro **design_id** on iframe do designer (veja mais detalhes na seção 2). 
 
-### List All Questions [GET]
+Recomendamos inclusive reaproveitar a mesma página que foi criada para o Designer para a edição, apenas passando o design_id quando necessário. 
 
-+ Response 200 (application/json)
+## 6 - Finalizando o Pedido [POST /orders]
 
-        [
-            {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 2048
-                    }, {
-                        "choice": "Python",
-                        "votes": 1024
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 512
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 256
-                    }
-                ]
-            }
-        ]
+Após a finalização/pagamento do pedido, é necessário enviar alguns dados do mesmo para a plataforma. 
 
-### Create a New Question [POST]
+Apenas após o envio desses dados as imagens ficam disponíveis na dashboard do Rapid Designer para download.
 
-You may create your own question using this action. It takes a JSON
-object containing a question and a collection of answers in the
-form of choices.
+O corpo da requisição deve conter os seguintes parâmetros obrigatórios:
+
+- remote_id - Obrigatório - ID do Pedido no seu banco de dados
+- remote_type - Obrigatório - Pode ser informado a url da sua loja/plataforma
+- currency - Obrigatório - Código da moeda utilizada na finalização do pedido, de acordo com a [ISO 4217](https://pt.wikipedia.org/wiki/ISO_4217). Ex: BRL, EUR, USD
+- price - obrigatório - Sub-Total do pedido em centavos (não é necessário informar o valor total incluindo frete, taxas, etc. Apenas o valor da compra dos produtos, incluindo descontos),
+
+- items - Obrigatório - Array de itens do pedido, sendo obrigatório informar os próximos três parâmetros para cada item
+- items.\*.design_id - Obrigatório - ID do design salvo previamente no item
+- items.\*.description - Obrigatório - Pode ser enviado o nome do produto, facilitando a identificação na Dashboard,
+- items.\*.quantity - Obrigatório - Quantidade de produtos no item do pedido,
+
+E também pode conter os seguintes parâmetros opcionais:
+
+- address - opcional - Array com dados do endereço
+- address.address_1 - Obrigatório apenas se **address** for enviado - Primeira linha do endereço
+- address.address_2 - Opcional - Segunda linha do endereço
+- address.city - Obrigatório apenas se **address** for enviado - Cidade do endereço
+- address.country - Obrigatório apenas se **address** for enviado - País do endereço
+
+Exemplo:
 
 + Request (application/json)
 
         {
-            "question": "Favourite programming language?",
-            "choices": [
-                "Swift",
-                "Python",
-                "Objective-C",
-                "Ruby"
+            "remote_id": 123,
+            "remote_type": "meusite.com",
+            "currency": "BRL",
+            "price": 1500,
+            "items": [
+                {
+                    "design_id": "id-do-design",
+                    "description": "caneca-de-porcelana"
+                    "quantity": 1
+                }
             ]
         }
 
-+ Response 201 (application/json)
+Havendo sucesso em salvar o pedido, será retornado:
 
-    + Headers
-
-            Location: /questions/2
++ Response 200 (application/json)
 
     + Body
 
             {
-                "question": "Favourite programming language?",
-                "published_at": "2015-08-05T08:40:51.620Z",
-                "choices": [
-                    {
-                        "choice": "Swift",
-                        "votes": 0
-                    }, {
-                        "choice": "Python",
-                        "votes": 0
-                    }, {
-                        "choice": "Objective-C",
-                        "votes": 0
-                    }, {
-                        "choice": "Ruby",
-                        "votes": 0
-                    }
-                ]
+                "created": true,
+                "order": {
+                    "id": "id-do-pedido"
+                }
             }
+
+Recomendamos que o ID do pedido retornado seja guardado no banco de dados, relacionado ao pedido da loja/site, facilitando o reenvio ou suporte caso necessário, além de possibilitar gerar um link direto para a Dashboard de Pedidos do Rapid Designer.
+
+## 7 - Link do Pedido
+
+Geralmente, após o pedido, será enviado um e-mail para o usuário reponsável pela loja cadastrado na plataforma. No entanto, é possível gerar um link direto para o Pedido no seguinte formato:
+
+```
+https://designer.rapidmockup.net/orders/id-do-pedido
+```
+
+Na posse deste link, estando devidamente autenticado na Dashboard, é possível visualizar os detalhes do pedido.
