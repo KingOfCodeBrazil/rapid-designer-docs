@@ -190,7 +190,7 @@ Exemplo direto na tag img
 
 É altamente recomendável que seja adicionado um botão ou link "Editar Desenho" ou algo similar nos itens do carrinho ou na página de compra. Dessa forma o usuário pode retornar e editar o desenho antes de finalizar a compra.
 
-Para acessar o modo de edição, é bastante simples. Basta passar o parâmetro **design_id** on iframe do designer (veja mais detalhes na seção 2). 
+Para acessar o modo de edição, é bastante simples. Basta passar o parâmetro **design_id** no iframe do designer (veja mais detalhes na seção 2). 
 
 Recomendamos inclusive reaproveitar a mesma página que foi criada para o Designer para a edição, apenas passando o design_id quando necessário. 
 
