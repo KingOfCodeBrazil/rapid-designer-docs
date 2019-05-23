@@ -78,11 +78,7 @@ https://designer.rapidmockup.net/designer
 ```
 
 E deverá ter os seguintes parâmetros enviados:
-'api_token' => 'required|string',
-            'remote_id' => 'required|string',
-            'remote_type' => 'required|string',
-            'rapid_product' => 'required',
-            'designer_id' => 'sometimes|exists:designs,id'
+
 - api_token - Obrigatório - Veja a seção de autenticação
 - currency - Opcional - Apenas se você quiser especificar como a moeda será mostrada, ex: R\$, $, etc
 - remote_id - Obrigatório - O ID do produto **na sua loja**, utilizado para fins de identificação se necessário
