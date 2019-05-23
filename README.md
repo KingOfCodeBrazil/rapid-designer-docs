@@ -71,7 +71,7 @@ Tendo o ID do Rapid Designer salvo no seu produto, você pode colocar um botão 
 </div>
 ```
 
-A URL do iframe deve seguir o seguinte formato:
+A URL do iframe deve ter o seguinte formato:
 
 ```
 https://designer.rapidmockup.net/designer
